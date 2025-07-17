@@ -31,16 +31,32 @@ def allowed_file(filename):
 def index():
     return render_template('index.html')
 
+import os
+from werkzeug.utils import secure_filename
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
         description = request.form['description']
         file = request.files.get('file')
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # 1) 원본 파일명 안전하게 정리
+            orig_filename = secure_filename(file.filename)
+            filename = orig_filename
+            save_dir = app.config['UPLOAD_FOLDER']
+            
+            # 2) 동일 이름 체크 후, _1, _2, ... 증분 붙이기
+            name, ext = os.path.splitext(orig_filename)
+            counter = 1
+            while os.path.exists(os.path.join(save_dir, filename)):
+                filename = f"{name}_{counter}{ext}"
+                counter += 1
+            
+            # 3) 최종 결정된 filename으로 저장
+            save_path = os.path.join(save_dir, filename)
             file.save(save_path)
 
+            # 4) DB에 저장할 때도 바뀐 filename 사용
             conn = get_connection()
             with conn.cursor() as cur:
                 sql = "INSERT INTO files (description, filename) VALUES (%s, %s)"
@@ -51,6 +67,7 @@ def upload():
             flash('파일이 업로드되었습니다.')
             return redirect(url_for('download'))
     return render_template('upload.html')
+
 
 @app.route('/download')
 def download():
