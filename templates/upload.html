@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload - MUD</title>
+</head>
+<body>
+  <h1><a href="/">MUD</a> - 파일 업로드</h1>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul>
+        {% for msg in messages %}
+          <li>{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+  <form method="post" enctype="multipart/form-data">
+    <div style="text-align:center; margin-top:50px;">
+      <label>설명: <input type="text" name="description" required></label><br><br>
+      <input type="file" name="file" required><br><br>
+      <button type="submit">업로드</button>
+    </div>
+  </form>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Download - MUD</title>
+  <script src="{{ url_for('static', filename='preview.js') }}"></script>
+</head>
+<body>
+  <h1><a href="/">MUD</a> - 파일 다운로드</h1>
+  <table border="1" width="100%">
+    <tr>
+      <th>설명</th><th>파일</th><th>업로드 날짜</th><th>삭제</th>
+    </tr>
+    {% for f in files %}
+    <tr>
+      <td class="preview" data-fulltext="{{ f.description }}">
+        {{ f.description[:10] }}{% if f.description|length>10 %}...{% endif %}
+      </td>
+      <td>
+        <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
+           class="preview"
+           data-fulltext="{{ f.filename }}">
+          {{ f.filename[:15] }}{% if f.filename|length>15 %}...{% endif %}
+        </a>
+      </td>
+      <td>{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td><a href="{{ url_for('delete', file_id=f.id) }}">삭제</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <div style="text-align:center; margin-top:20px;">
+    {% for p in range(1, total_pages+1) %}
+      {% if p==page %}
+        <strong>{{ p }}</strong>
+      {% else %}
+        <a href="{{ url_for('download', page=p) }}">{{ p }}</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</body>
+</html>
