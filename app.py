@@ -94,7 +94,9 @@ def download():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    return send_from_directory(app.config['UPLOAD_FOLDER'], 
+                               filename,
+                               as_attachment=True)#다운로드 팝업뜨게만들기
 
 @app.route('/delete/<int:file_id>')
 def delete(file_id):
