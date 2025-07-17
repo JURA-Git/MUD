@@ -18,7 +18,6 @@
       </td>
       <td>
         <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
-           download="{{ f.filename }}"
            class="preview"
            data-fulltext="{{ f.filename }}">
           {{ f.filename[:15] }}{% if f.filename|length>15 %}...{% endif %}
