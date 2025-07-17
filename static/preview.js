@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   const tooltip = document.createElement('div');
+  tooltip.style.pointerEvents = 'none';
+
   tooltip.style.position = 'absolute';
   tooltip.style.padding = '5px';
   tooltip.style.border = '1px solid #aaa';
