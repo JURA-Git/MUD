@@ -93,10 +93,7 @@ def allowed_file(filename):
     # null byte 차단
     if '\x00' in filename:
         return False
-    # secure_filename로 특수문자 필터링
-    safe_name = secure_filename(filename)
-    if safe_name != filename:
-        return False
+
     # 확장자 검사
     ext = filename.rsplit('.', 1)[-1].lower()
     return ext in ALLOWED_EXT
@@ -113,31 +110,31 @@ def upload():
     if request.method == 'POST':
         description = request.form.get('description', '')
         file = request.files.get('file')
-        # 파일 유효성 검사
+
+        # 1. 유효성 검사: 확장자 + 0 byte 검사
         if not file or not allowed_file(file.filename):
-            flash('0byte가 포함되었거나, 확장자가 허용되지 않습니다.')
+            flash('허용되지 않는 파일입니다.(확장자 및 0 byte 검사)')
             return redirect(request.url)
 
-        # 안전한 파일명
-        orig_filename = secure_filename(file.filename)
-        name, ext = os.path.splitext(orig_filename)
-        filename = orig_filename
-        save_dir = app.config['UPLOAD_FOLDER']
+        # 2. 원본 파일명에서 안전한 저장용 이름 생성
+        orig_filename = file.filename
+        filename = secure_filename(orig_filename)
 
-        # 중복 파일명 처리
+        # 3. 중복 방지
+        name, ext = os.path.splitext(filename)
         counter = 1
-        while os.path.exists(os.path.join(save_dir, filename)):
+        while os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], filename)):
             filename = f"{name}_{counter}{ext}"
             counter += 1
 
-        # 저장 경로 생성 및 저장
-        save_path = os.path.join(save_dir, filename)
+        # 4. 파일 저장
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         try:
             file.save(save_path)
         except Exception:
-            abort(500, '파일 저장에 실패했습니다.')
+            abort(500, '파일 저장 실패')
 
-        # DB 기록
+        # 5. DB 저장 (secure_filename 이름만 저장)
         conn = get_connection()
         with conn.cursor() as cur:
             cur.execute(
@@ -149,6 +146,7 @@ def upload():
 
         flash('파일이 업로드되었습니다.')
         return redirect(url_for('download'))
+
     return render_template('upload.html')
 
 
