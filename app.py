@@ -72,7 +72,7 @@ def upload():
 @app.route('/download')
 def download():
     page      = request.args.get('page', 1, type=int)
-    per_page  = 5
+    per_page  = 1
     offset    = (page - 1) * per_page
 
     conn = get_connection()
