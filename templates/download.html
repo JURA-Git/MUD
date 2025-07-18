@@ -22,7 +22,7 @@
 </head>
 <body>
   <h1><a href="/">MUD</a> - 파일 다운로드</h1>
-  <table border="1" width="100%">
+  <table border="1">
     <tr>
       <th style="width:60%">Comment</th>
       <th style="width:15%">File</th>
@@ -31,8 +31,11 @@
     </tr>
     {% for f in files %}
     <tr>
-      <td class="preview" data-fulltext="{{ f.description }}">
+     /* <td class="preview" data-fulltext="{{ f.description }}">
         {{ f.description[:10] }}{% if f.description|length>10 %}...{% endif %}
+      </td> */
+      <td class="preview" data-fulltext="{{ f.description }}">
+        {{ f.description }}
       </td>
       <td style="text-align:center">
         <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
