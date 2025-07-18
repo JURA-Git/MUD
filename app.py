@@ -10,8 +10,64 @@ app.secret_key = 'cvnFDzlx#jsDFjsCHBS'
 # 1) 업로드 크기 제한: 10 MB
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
 
-# 2) 허용 확장자(jpg, jpeg)
-ALLOWED_EXT = {'jpg', 'jpeg'}
+# 2) 허용 확장자
+ALLOWED_EXT = { 
+                # 이미지 파일
+                'jpg', 'jpeg', 'png', 'gif', 'svg',
+                # 압축/아카이브
+                'zip', 'rar', '7z',
+                'tar', 'gz', 'bz2', 'xz',
+                'tar.gz', 'tar.bz2', 'tar.xz',
+                # 문서/오피스/텍스트
+                'txt', 'pdf',
+                'doc', 'docx',
+                'xls', 'xlsx', 'xlsb',
+                'ppt', 'pptx',
+                # 설정/로그
+                'yaml', 'yml',
+                'json', 'xml',
+                'ini', 'conf', 'log',
+                # 코드/스크립트
+                'py', 'java', 'c', 'cpp', 'h',
+                'sh', 'bash', 'zsh', 'fish',
+                'bat', 'cmd',
+                'plsql', 'tcl', 'awk', 'sed',
+                'makefile', 'cmake',
+                # 빌드 도구/패키지 매니저
+                'gradle', 'ant', 'sbt',
+                'npm', 'yarn',
+                'dockerfile',
+                # 인프라/자동화(IaC)
+                'kubernetes', 'helm',
+                'terraform',
+                'ansible', 'chef', 'puppet', 'saltstack',
+                'cloudformation',
+                # API 명세
+                'openapi', 'swagger', 'graphql',
+                # 데이터베이스 덤프/파일
+                'sql', 'db',
+                'sqlite', 'h2',
+                'dbf', 'mdb', 'accdb',
+                # 이진 직렬화/포맷
+                'protobuf', 'avro',
+                'parquet', 'orc',
+                'thrift', 'capnp',
+                'msgpack', 'bson', 'cbor',
+                'flatbuffers',
+                'sbe', 'fix', 'x12', 'edi',
+                # 데이터베이스 서비스 클라이언트
+                'postgresql', 'mysql', 'mariadb',
+                'oracle', 'sqlserver', 'db2',
+                'cassandra', 'mongodb', 'redis',
+                'elasticsearch', 'couchbase',
+                'dynamodb', 'bigtable', 'hbase',
+                'neo4j', 'arango', 'orientdb',
+                'couchdb', 'riak',
+                'influxdb', 'timescaledb',
+                'clickhouse', 'presto', 'trino',
+                }
+# set().union(*ALLOWED_EXT.values())
+                
 
 # 업로드 폴더 설정
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -59,7 +115,7 @@ def upload():
         file = request.files.get('file')
         # 파일 유효성 검사
         if not file or not allowed_file(file.filename):
-            flash('허용되지 않는 파일입니다. JPG(.jpg, .jpeg)만 업로드 가능합니다.')
+            flash('0byte가 포함되었거나, 확장자가 허용되지 않습니다.')
             return redirect(request.url)
 
         # 안전한 파일명
