@@ -268,15 +268,12 @@ PUBLIC_PATHS = [
 ######################################로그인 체크 데코레이터######################################
 @app.before_request
 def check_login():
-    # 로그인 되어 있으면 통과
-    if session.get('user'):
+    if session.get('kakao_access_token'):
         return
 
-    # 로그인 없이 허용된 경로는 통과
     for path in PUBLIC_PATHS:
         if request.path.startswith(path):
             return
 
-    # 로그인 안 되어 있고 보호 경로라면 → 메인 페이지로
     return redirect(url_for('index'))
 ######################################로그인 체크 데코레이터######################################
