@@ -1,15 +1,23 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort
 from werkzeug.utils import secure_filename
 import pymysql
 
 # 기본 설정
 app = Flask(__name__)
-app.secret_key = 'cvnFDzlx#jsDFjsCHBS'  # 필요시 변경
+app.secret_key = 'cvnFDzlx#jsDFjsCHBS'
+
+# 1) 업로드 크기 제한: 10 MB
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
+
+# 2) 허용 확장자(jpg, jpeg)
+ALLOWED_EXT = {'jpg', 'jpeg'}
+
+# 업로드 폴더 설정
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# MariaDB 연결 정보 (10.10.8.4)
+# MariaDB 연결 정보
 DB_CONNECT = {
     'host': '10.10.8.4',
     'user': 'mud_db',
@@ -19,53 +27,72 @@ DB_CONNECT = {
     'cursorclass': pymysql.cursors.DictCursor
 }
 
-# DB 커넥션 생성 함수
 def get_connection():
     return pymysql.connect(**DB_CONNECT)
 
-# 허용 파일 검사 (필요시 확장자 제한)
+# 허용 파일 검사
 def allowed_file(filename):
-    return filename != ''
+    if not filename:
+        return False
+    # null byte 차단
+    if '\x00' in filename:
+        return False
+    # secure_filename로 특수문자 필터링
+    safe_name = secure_filename(filename)
+    if safe_name != filename:
+        return False
+    # 확장자 검사
+    ext = filename.rsplit('.', 1)[-1].lower()
+    return ext in ALLOWED_EXT
+
+
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-import os
-from werkzeug.utils import secure_filename
-
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if request.method == 'POST':
-        description = request.form['description']
+        description = request.form.get('description', '')
         file = request.files.get('file')
-        if file and allowed_file(file.filename):
-            # 1) 원본 파일명 안전하게 정리
-            orig_filename = secure_filename(file.filename)
-            filename = orig_filename
-            save_dir = app.config['UPLOAD_FOLDER']
-            
-            # 2) 동일 이름 체크 후, _1, _2, ... 증분 붙이기
-            name, ext = os.path.splitext(orig_filename)
-            counter = 1
-            while os.path.exists(os.path.join(save_dir, filename)):
-                filename = f"{name}_{counter}{ext}"
-                counter += 1
-            
-            # 3) 최종 결정된 filename으로 저장
-            save_path = os.path.join(save_dir, filename)
+        # 파일 유효성 검사
+        if not file or not allowed_file(file.filename):
+            flash('허용되지 않는 파일입니다. JPG(.jpg, .jpeg)만 업로드 가능합니다.')
+            return redirect(request.url)
+
+        # 안전한 파일명
+        orig_filename = secure_filename(file.filename)
+        name, ext = os.path.splitext(orig_filename)
+        filename = orig_filename
+        save_dir = app.config['UPLOAD_FOLDER']
+
+        # 중복 파일명 처리
+        counter = 1
+        while os.path.exists(os.path.join(save_dir, filename)):
+            filename = f"{name}_{counter}{ext}"
+            counter += 1
+
+        # 저장 경로 생성 및 저장
+        save_path = os.path.join(save_dir, filename)
+        try:
             file.save(save_path)
+        except Exception:
+            abort(500, '파일 저장에 실패했습니다.')
 
-            # 4) DB에 저장할 때도 바뀐 filename 사용
-            conn = get_connection()
-            with conn.cursor() as cur:
-                sql = "INSERT INTO files (description, filename) VALUES (%s, %s)"
-                cur.execute(sql, (description, filename))
-                conn.commit()
-            conn.close()
+        # DB 기록
+        conn = get_connection()
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO files (description, filename) VALUES (%s, %s)",
+                (description, filename)
+            )
+            conn.commit()
+        conn.close()
 
-            flash('파일이 업로드되었습니다.')
-            return redirect(url_for('download'))
+        flash('파일이 업로드되었습니다.')
+        return redirect(url_for('download'))
     return render_template('upload.html')
 
 
