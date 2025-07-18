@@ -4,48 +4,30 @@
   <meta charset="UTF-8">
   <title>Download - MUD</title>
   <script src="{{ url_for('static', filename='preview.js') }}"></script>
-    <style>
-    /* 1) 셀 고정 너비를 적용 */
-    table { 
-      table-layout: fixed; 
-      width: 100%; 
-      border-collapse: collapse;
-    }
-
-    /* 2) ellipsis 처리를 위한 클래스 */
-    .preview {
-      white-space: nowrap;        /* 한 줄로 고정 */
-      overflow: hidden;           /* 넘친 부분 숨기기 */
-      text-overflow: ellipsis;    /* 말줄임표 표시 */
-    }
-  </style>
 </head>
 <body>
   <h1><a href="/">MUD</a> - 파일 다운로드</h1>
-  <table border="1">
+  <table border="1" width="100%">
     <tr>
       <th style="width:60%">Comment</th>
       <th style="width:15%">File</th>
       <th style="width:20%">Upload date</th>
-      <th style="width:5%">delete</th>
+      <th style="width:5%">Delete</th>
     </tr>
     {% for f in files %}
     <tr>
-     /* <td class="preview" data-fulltext="{{ f.description }}">
-        {{ f.description[:10] }}{% if f.description|length>10 %}...{% endif %}
-      </td> */
       <td class="preview" data-fulltext="{{ f.description }}">
-        {{ f.description }}
+        {{ f.description[:10] }}{% if f.description|length>10 %}...{% endif %}
       </td>
-      <td>
+      <td style="text-align:center">
         <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
            class="preview"
            data-fulltext="{{ f.filename }}">
           {{ f.filename[:15] }}{% if f.filename|length>15 %}...{% endif %}
         </a>
       </td>
-      <td>{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-      <td><a href="{{ url_for('delete', file_id=f.id) }}">삭제</a></td>
+      <td style="text-align:center">{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+      <td style="text-align:center"><a href="{{ url_for('delete', file_id=f.id) }}">삭제</a></td>
     </tr>
     {% endfor %}
   </table>
