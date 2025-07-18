@@ -150,26 +150,26 @@ def callback_kakao():
     flash('카카오 인증 성공')
     return redirect(url_for('main_page'))
 
-@app.route('/login')
-def login_page():
-    return render_template('login.html')
+
 @app.route('/main')
 def main_page():
     return render_template('main.html')
-
+# @app.route('/login')
+# def login_page():
+#     return render_template('login.html')
 @app.route('/logout')
 def logout():
     # 세션에서 카카오 액세스 토큰 제거
     session.pop('kakao_access_token', None)
     flash('로그아웃 되었습니다.')
-    return redirect(url_for('login_page'))
+    return redirect(url_for('index'))
 ## 카카오 인증절차 ########################################################################
 
 @app.route('/')
-def index():
-    return redirect(url_for('login_page'))
 # def index():
-#     return render_template('index.html')
+#     return redirect(url_for('login_page'))
+def index():
+    return render_template('index.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -287,5 +287,5 @@ def check_login():
     for path in PUBLIC_PATHS:
         if request.path.startswith(path):
             return
-    return redirect(url_for('login_page'))
+    return redirect(url_for('index'))
 ######################################로그인 체크 데코레이터######################################
