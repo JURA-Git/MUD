@@ -1,4 +1,4 @@
-mport os
+import os
 import requests
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort, session
 from werkzeug.utils import secure_filename
@@ -268,12 +268,15 @@ PUBLIC_PATHS = [
 ######################################로그인 체크 데코레이터######################################
 @app.before_request
 def check_login():
-    if session.get('kakao_access_token'):
+    # 로그인 되어 있으면 통과
+    if session.get('user'):
         return
 
+    # 로그인 없이 허용된 경로는 통과
     for path in PUBLIC_PATHS:
         if request.path.startswith(path):
             return
 
+    # 로그인 안 되어 있고 보호 경로라면 → 메인 페이지로
     return redirect(url_for('index'))
 ######################################로그인 체크 데코레이터######################################
