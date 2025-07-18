@@ -148,10 +148,14 @@ def callback_kakao():
     # 세션에 토큰 저장
     session['kakao_access_token'] = access_token
     flash('카카오 인증 성공')
-    return redirect(url_for('index'))
-@app.route('/login')
-def login_page():
-    return render_template('login.html')
+    return redirect(url_for('main_page'))
+
+# @app.route('/login')
+# def login_page():
+#     return render_template('login.html')
+@app.route('/main')
+def main_page():
+    return render_template('main.html')
 
 @app.route('/logout')
 def logout():
@@ -268,7 +272,7 @@ if __name__ == '__main__':
 # 로그인 없이 접근 가능한 경로 (예외 처리)
 PUBLIC_PATHS = [
     '/',                # 메인페이지
-    '/login',           # 로그인 페이지
+    # '/login',           # 로그인 페이지
     '/oauth/kakao',     # 카카오 OAuth 인증 시작
     '/oauth/callback/kakao',  # 로그인 콜백
     '/static/',         # 정적 파일
