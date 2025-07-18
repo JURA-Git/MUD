@@ -9,7 +9,8 @@ app = Flask(__name__)
 app.secret_key = 'cvnFDzlx#jsDFjsCHBS'# 세션용
 
 # 카카오 REST API 키
-KAKAO_CLIENT_ID = '4391fd5ee9201b61b52bb1ce7c474e9f'
+# KAKAO_CLIENT_ID = '4391fd5ee9201b61b52bb1ce7c474e9f'
+KAKAO_CLIENT_ID = 'tYbp306dHUMFOLjNl6NceuiUB8cGQ072'
 KAKAO_REDIRECT_URI = 'http://10.10.8.3/oauth/callback/kakao'
 
 
