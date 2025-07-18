@@ -4,6 +4,21 @@
   <meta charset="UTF-8">
   <title>Download - MUD</title>
   <script src="{{ url_for('static', filename='preview.js') }}"></script>
+    <style>
+    /* 1) 셀 고정 너비를 적용 */
+    table { 
+      table-layout: fixed; 
+      width: 100%; 
+      border-collapse: collapse;
+    }
+
+    /* 2) ellipsis 처리를 위한 클래스 */
+    .preview {
+      white-space: nowrap;        /* 한 줄로 고정 */
+      overflow: hidden;           /* 넘친 부분 숨기기 */
+      text-overflow: ellipsis;    /* 말줄임표 표시 */
+    }
+  </style>
 </head>
 <body>
   <h1><a href="/">MUD</a> - 파일 다운로드</h1>
