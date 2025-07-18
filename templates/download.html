@@ -21,46 +21,48 @@
 <body>
   <h1><a href="/">MUD</a> - 파일 다운로드</h1>
   <table border="1" width="100%">
-    <tr>
-      <th style="width:60%">Comment</th>
-      <th style="width:15%">File</th>
-      <th style="width:20%">Upload date</th>
-      <th style="width:5%">Delete</th>
-    </tr>
+    <thead>
+      <tr>
+        <th style="width:60%">Comment</th>
+        <th style="width:15%">File</th>
+        <th style="width:20%">Upload date</th>
+        <th style="width:5%">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
     {% for f in files %}
-    <tr>
-      <td class="preview" data-fulltext="{{ f.description }}">
-        {{ f.description }}
-      </td>
-      <td style="text-align:center">
-        <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
-           class="preview"
-           data-fulltext="{{ f.filename }}">
-          {{ f.filename }}
-        </a>
-      </td>
-      <td style="text-align:center">{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-      <td style="text-align:center"><a href="{{ url_for('delete', file_id=f.id) }}">삭제</a></td>
-    </tr>
+      <tr>
+        <td class="preview" data-fulltext="{{ f.description }}">
+          {{ f.description }}
+        </td>
+        <td class="preview" style="text-align:center" data-fulltext="{{ f.filename }}">
+          <a href="{{ url_for('uploaded_file', filename=f.filename) }}" download="{{ f.filename }}">
+            {{ f.filename }}
+          </a>
+        </td>
+        <td style="text-align:center">{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td style="text-align:center"><a href="{{ url_for('delete', file_id=f.id) }}">삭제</a></td>
+      </tr>
     {% endfor %}
+    {# 빈 행을 채워서 테이블을 항상 10개로 유지 #}
+    {% for _ in range(10 - files|length) %}
+      <tr>
+        <td class="preview">blank</td>
+        <td class="preview" style="text-align:center">blank</td>
+        <td style="text-align:center">blank</td>
+        <td style="text-align:center">blank</td>
+      </tr>
+    {% endfor %}
+    </tbody>
   </table>
 
   <div style="text-align:center; margin-top:20px;">
     {% for p in range(1, total_pages+1) %}
-      {% if p==page %}
+      {% if p == page %}
         <strong>{{ p }}</strong>
       {% else %}
         <a href="{{ url_for('download', page=p) }}">{{ p }}</a>
       {% endif %}
-    {% endfor %}
-    {# 빈 행을 채워서 테이블을 항상 10개로 유지 #}
-    {% for _ in range(10 - files|length) %}
-    <tr>
-      <td class="preview">blank</td>
-      <td class="preview" style="text-align:center">blank</td>
-      <td style="text-align:center">blank</td>
-      <td style="text-align:center">blank</td>
-    </tr>
     {% endfor %}
   </div>
 </body>
