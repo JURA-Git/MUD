@@ -105,9 +105,11 @@ def allowed_file(filename):
     return ext in ALLOWED_EXT
 ## 카카오 인증절차 ########################################################################
 ## 카카오 OAuth 인증 처리
+
+
+    # 카카오 인증 URL 생성
 @app.route('/oauth/kakao')
 def kakao_oauth():
-    # 카카오 인증 URL 생성
     kakao_auth_url = (
         f"https://kauth.kakao.com/oauth/authorize?client_id={KAKAO_CLIENT_ID}"
         f"&redirect_uri={KAKAO_REDIRECT_URI}&response_type=code"
@@ -147,6 +149,10 @@ def callback_kakao():
     session['kakao_access_token'] = access_token
     flash('카카오 인증 성공')
     return redirect(url_for('index'))
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
 @app.route('/logout')
 def logout():
     # 세션에서 카카오 액세스 토큰 제거
@@ -260,7 +266,8 @@ if __name__ == '__main__':
 # 로그인 없이 접근 가능한 경로 (예외 처리)
 PUBLIC_PATHS = [
     '/',                # 메인페이지
-    '/login/kakao',     # 로그인 시도
+    '/login',           # 로그인 페이지
+    '/oauth/kakao',     # 카카오 OAuth 인증 시작
     '/oauth/callback/kakao',  # 로그인 콜백
     '/static/',         # 정적 파일
     '/favicon.ico'
@@ -269,15 +276,10 @@ PUBLIC_PATHS = [
 ######################################로그인 체크 데코레이터######################################
 @app.before_request
 def check_login():
-    # 로그인 되어 있으면 통과
-    if session.get('user'):
+    if session.get('kakao_access_token'):
         return
-
-    # 로그인 없이 허용된 경로는 통과
     for path in PUBLIC_PATHS:
         if request.path.startswith(path):
             return
-
-    # 로그인 안 되어 있고 보호 경로라면 → 메인 페이지로
-    return redirect(url_for('index'))
+    return redirect(url_for('login_page'))
 ######################################로그인 체크 데코레이터######################################
