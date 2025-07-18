@@ -17,13 +17,13 @@
     {% for f in files %}
     <tr>
       <td class="preview" data-fulltext="{{ f.description }}">
-        {{ f.description[:10] }}{% if f.description|length>10 %}...{% endif %}
+        {{ f.description }}
       </td>
       <td style="text-align:center">
         <a href="{{ url_for('uploaded_file', filename=f.filename) }}"
            class="preview"
            data-fulltext="{{ f.filename }}">
-          {{ f.filename[:15] }}{% if f.filename|length>15 %}...{% endif %}
+          {{ f.filename }}
         </a>
       </td>
       <td style="text-align:center">{{ f.upload_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
