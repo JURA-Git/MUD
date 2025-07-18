@@ -53,6 +53,15 @@
         <a href="{{ url_for('download', page=p) }}">{{ p }}</a>
       {% endif %}
     {% endfor %}
+    {# 빈 행을 채워서 테이블을 항상 10개로 유지 #}
+    {% for _ in range(10 - files|length) %}
+    <tr>
+      <td class="preview">blank</td>
+      <td class="preview" style="text-align:center">blank</td>
+      <td style="text-align:center">blank</td>
+      <td style="text-align:center">blank</td>
+    </tr>
+    {% endfor %}
   </div>
 </body>
 </html>
