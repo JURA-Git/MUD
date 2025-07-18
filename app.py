@@ -158,12 +158,14 @@ def logout():
     # 세션에서 카카오 액세스 토큰 제거
     session.pop('kakao_access_token', None)
     flash('로그아웃 되었습니다.')
-    return redirect(url_for('index'))
+    return redirect(url_for('login_page'))
 ## 카카오 인증절차 ########################################################################
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect(url_for('login_page'))
+# def index():
+#     return render_template('index.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
