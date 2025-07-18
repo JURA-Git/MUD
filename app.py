@@ -113,7 +113,7 @@ def upload():
 
         # 1. 유효성 검사: 확장자 + 0 byte 검사
         if not file or not allowed_file(file.filename):
-            flash('허용되지 않는 파일입니다.(확장자 및 0 byte 검사)')
+            flash('허용되지 않는 파일입니다.(확장자 및 null 파일 검사)')
             return redirect(request.url)
 
         # 2. 원본 파일명에서 안전한 저장용 이름 생성
