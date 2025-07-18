@@ -1,15 +1,23 @@
-import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort
+mport os
+import requests
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory, flash, abort, session
 from werkzeug.utils import secure_filename
 import pymysql
 
 # 기본 설정
 app = Flask(__name__)
-app.secret_key = 'cvnFDzlx#jsDFjsCHBS'
+app.secret_key = 'cvnFDzlx#jsDFjsCHBS'# 세션용
+
+# 카카오 REST API 키
+KAKAO_CLIENT_ID = '4391fd5ee9201b61b52bb1ce7c474e9f'
+KAKAO_REDIRECT_URI = 'http://10.10.8.3/oauth/callback/kakao'
+
 
 # 1) 업로드 크기 제한: 10 MB
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # 10MB
-
+# 업로드 폴더 설정
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # 2) 허용 확장자
 ALLOWED_EXT = { 
                 # 이미지 파일
@@ -69,9 +77,7 @@ ALLOWED_EXT = {
 # set().union(*ALLOWED_EXT.values())
                 
 
-# 업로드 폴더 설정
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 # MariaDB 연결 정보
 DB_CONNECT = {
@@ -93,13 +99,60 @@ def allowed_file(filename):
     # null byte 차단
     if '\x00' in filename:
         return False
-
     # 확장자 검사
     ext = filename.rsplit('.', 1)[-1].lower()
     return ext in ALLOWED_EXT
+## 카카오 인증절차 ########################################################################
+## 카카오 OAuth 인증 처리
+@app.route('/oauth/kakao')
+def kakao_oauth():
+    # 카카오 인증 URL 생성
+    kakao_auth_url = (
+        f"https://kauth.kakao.com/oauth/authorize?client_id={KAKAO_CLIENT_ID}"
+        f"&redirect_uri={KAKAO_REDIRECT_URI}&response_type=code"
+    )
+    return redirect(kakao_auth_url)
 
+## 카카오 OAuth 콜백 처리
+@app.route('/oauth/callback/kakao')
+def callback_kakao():
+    code = request.args.get('code')
+    if not code:
+        flash('인증 코드가 없습니다.')
+        return redirect(url_for('index'))
 
+    # 카카오 토큰 요청
+    token_url = 'https://kauth.kakao.com/oauth/token'
+    data = {
+        'grant_type': 'authorization_code',
+        'client_id': KAKAO_CLIENT_ID,
+        'redirect_uri': KAKAO_REDIRECT_URI,
+        'code': code
+    }
+    
+    response = requests.post(token_url, data=data)
+    if response.status_code != 200:
+        flash('토큰 요청 실패')
+        return redirect(url_for('index'))
 
+    token_info = response.json()
+    access_token = token_info.get('access_token')
+
+    if not access_token:
+        flash('액세스 토큰이 없습니다.')
+        return redirect(url_for('index'))
+
+    # 세션에 토큰 저장
+    session['kakao_access_token'] = access_token
+    flash('카카오 인증 성공')
+    return redirect(url_for('index'))
+@app.route('/logout')
+def logout():
+    # 세션에서 카카오 액세스 토큰 제거
+    session.pop('kakao_access_token', None)
+    flash('로그아웃 되었습니다.')
+    return redirect(url_for('index'))
+## 카카오 인증절차 ########################################################################
 
 @app.route('/')
 def index():
@@ -199,3 +252,31 @@ def delete(file_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+
+
+############ 로그인 없이 접근 가능한 경로 설정
+
+# 로그인 없이 접근 가능한 경로 (예외 처리)
+PUBLIC_PATHS = [
+    '/',                # 메인페이지
+    '/login/kakao',     # 로그인 시도
+    '/oauth/callback/kakao',  # 로그인 콜백
+    '/static/',         # 정적 파일
+    '/favicon.ico'
+]
+
+######################################로그인 체크 데코레이터######################################
+@app.before_request
+def check_login():
+    # 로그인 되어 있으면 통과
+    if session.get('user'):
+        return
+
+    # 로그인 없이 허용된 경로는 통과
+    for path in PUBLIC_PATHS:
+        if request.path.startswith(path):
+            return
+
+    # 로그인 안 되어 있고 보호 경로라면 → 메인 페이지로
+    return redirect(url_for('index'))
+######################################로그인 체크 데코레이터######################################
